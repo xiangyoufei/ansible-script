@@ -1,8 +1,12 @@
 # kafka ansible脚本说明
 
 由于文件大小限制，脚本中去除了jdk、kafka、zk等安装包。
+文件清单：
 
-
+apache-zookeeper-3.5.6-bin.tar.gz  
+kafka_2.13-2.4.0.tgz  
+kafka-manager-2.0.0.2.zip  
+jdk-8u181-linux-x64.rpm
 ## 集群安装方式：（files目录需要手动创建）
 
 ​	jdk安装包位置：roles\jdk\files

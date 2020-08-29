@@ -1,0 +1,176 @@
+---
+# 修改所有节点的hosts文件
+- name: update /etc/hosts
+  hosts: rabbitmq
+  remote_user: root
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:
+  - name: test lineinfile
+    shell: echo -e "{{ node_hosts }}" >> /etc/hosts
+
+#所有节点部署rabbitmq
+- name: install rabbitmq app
+  gather_facts: False
+  hosts: rabbitmq
+  remote_user: root
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: download erlang package
+      copy: src={{ erlang_url }} dest=/tmp/erlang.rpm
+
+    - name: install erlang packages
+      yum: name=/tmp/erlang.rpm state=present
+
+    - name: download socat package
+      copy: src={{ socat_url }} dest=/tmp/socat.rpm
+
+    - name: install socat packages
+      yum: name=/tmp/socat.rpm state=present
+
+    - name: download rabbitmq package
+      copy: src={{ rabbitmq_url }} dest=/tmp/rabbitmq-server.rpm
+
+    - name: rpm install rabbitmq-server
+      yum: name=/tmp/rabbitmq-server.rpm state=present
+
+    - name: start rabbitmq-server
+      service: name=rabbitmq-server enabled=yes state=restarted
+
+    - name: Enable the plugins is installed
+      shell: rabbitmq-plugins enable rabbitmq_management && rabbitmq-plugins enable rabbitmq_mqtt && rabbitmq-plugins enable rabbitmq_web_mqtt
+      notify:
+        restart rabbitmq-server
+
+    - name: create the rabbitmq user
+      shell: rabbitmqctl add_user {{ username }} {{ password }}
+      ignore_errors: yes
+
+    - name: add rabbitmq_user to adminstrator
+      shell: rabbitmqctl set_user_tags {{ username }} administrator
+
+    - name: configure the rabbitmq_user premission
+      shell: rabbitmqctl set_permissions -p "/" {{ username }} ".*" ".*" ".*"
+
+    - name: del rabbitmq install pkg
+      file: path={{ item }} state=absent
+      with_items:
+        - /tmp/erlang.rpm
+        - /tmp/socat.rpm
+        - /tmp/rabbitmq-server.rpm
+
+  handlers: 
+    - name: restart rabbitmq-server 
+      service: name=rabbitmq-server state=restarted
+
+
+
+
+# 将node1节点的cookie复制到本地
+- name: get erlang cookie
+  gather_facts: False
+  hosts: cookie-node
+  remote_user: root
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: get-erlang-cookie
+      fetch:
+        src: "{{ erlang_cookie_path }}"
+        dest: "{{ local_cookie_path }}"
+        flat: yes
+
+# 将本地的cookie下发到其他所有节点
+- name: replace erlang cookie
+  gather_facts: False
+  hosts: rabbitmq
+  remote_user: root
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: get-erlang-cookie
+      copy:
+        src: "{{ local_cookie_path }}"
+        dest: "{{ erlang_cookie_path }}"
+      notify:
+        restart rabbitmq-server
+
+  handlers:
+    - name: restart rabbitmq-server
+      service: name=rabbitmq-server state=restarted
+
+# 停止所有节点RabbitMq服务，然后使用detached参数独立运行
+- name: detached all rabbitmq-server
+  gather_facts: False
+  hosts: rabbitmq
+  remote_user: root
+  tasks:
+
+    - name: stop rabbitmq
+      service: name=rabbitmq-server state=stopped
+
+    - name: detached run alone
+      shell: rabbitmq-server -detached
+
+# 将内存节点加入集群
+- name: ram-node join cluster
+  gather_facts: False
+  hosts: ram-node
+  remote_user: root
+  vars_files:
+    - vars.yml
+  tasks:
+
+    - name: rabbitmqctl stop_app
+      shell: rabbitmqctl stop_app && rabbitmqctl join_cluster --ram {{ disk_node_host }} && rabbitmqctl start_app
+
+# 将另外的磁盘节点加入集群
+- name: disk-node join cluster
+  gather_facts: False
+  hosts: disk-node-notmaster
+  remote_user: root
+  vars_files:
+    - vars.yml
+  tasks:
+
+    - name: rabbitmqctl stop_app
+      shell: rabbitmqctl stop_app && rabbitmqctl join_cluster {{ disk_node_host }} && rabbitmqctl start_app
+
+# 安装haproxy
+- name: install haproxy app
+  gather_facts: False
+  hosts: ha-node
+  remote_user: root
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: download haproxy package
+      copy: src={{ haproxy_url }} dest=/tmp/haproxy.rpm
+
+    - name: install haproxy packages
+      yum: name=/tmp/haproxy.rpm state=present
+
+    - name: update configuration
+      template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
+    
+    - name: update haproxy logconf
+      shell: echo -e "{{ haproxy_log_conf }}" >> /etc/rsyslog.conf
+      notify: 
+        - restart rsyslog
+        - restart haproxy
+  handlers:
+    - name: restart rsyslog
+      service: name=rsyslog state=restarted
+    - name: restart haproxy
+      service: name=haproxy state=restarted
+
+# 配置rabbitmq策略
+- name: config rabbitmq policy
+  gather_facts: False
+  hosts: cookie-node
+  remote_user: root
+  tasks:
+    - name: config rabbitmq policy
+      shell: rabbitmqctl set_policy -p / ha "^" '{"ha-mode":"all"}'

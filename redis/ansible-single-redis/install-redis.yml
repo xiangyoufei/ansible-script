@@ -1,0 +1,53 @@
+- name: install redis
+  hosts: single-redis
+  remote_user: root
+  gather_facts: false
+  vars_files: 
+    - vars.yml
+  tasks:
+  - name: add_redis_user
+    user:
+      comment: "add redis user"
+      name: redisi
+      createhome: false
+      shell: /sbin/nologin
+      state: present
+    tags:
+      - add_redis_user
+  - name: create data dir
+    file: 
+      path: /data/redis/conf
+      state: directory
+      mode: 0755
+    tags:
+      - mkdir_redis_conf_file
+  - name: copy_redis_conf
+    template:
+      src: redis.conf.j2
+      dest: /data/redis/conf/redis-{{port}}.conf
+    tags:
+      - copy_redis_conf
+  - name: copy_redis_bin
+    copy: src={{redis_bin_path}}/{{item}} dest=/data/redis/src/ mode=0755
+    with_items:  "{{redis_bin}}"
+    tags:
+      - copy_redis_bin
+  - name: copy_redis_server
+    shell:  chdir=/data/redis/src cp redis-server  redis-{{port}}server
+    tags:
+      - copy_redis_server
+  - name : make_log_dir
+    file: 
+      path: /data/redis/log
+      state: directory
+    tags: 
+      - make_log_dir
+  - name : make_data_dir
+    file: 
+      path: /data/redis/data/redis-{{port}}
+      state: directory
+    tags: 
+      - make_data_dir
+  - name: start_redis_service
+    shell: /data/redis/src/redis-server /data/redis/conf/redis-{{port}}.conf
+    tags: start_redis_service

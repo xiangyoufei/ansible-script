@@ -1,0 +1,13 @@
+---
+node_hosts: 10.200.60.19 rabbitmq1\n10.200.60.12 rabbitmq2\n10.200.60.46 rabbitmq3\n10.200.60.42 rabbitmq4
+erlang_url: /data/yum_data/soft/erlang-21.3.8.2-1.el7.x86_64.rpm
+socat_url: /data/yum_data/soft/socat-1.7.3.2-2.el7.x86_64.rpm
+rabbitmq_url: /data/yum_data/soft/rabbitmq-server-3.8.1-1.el7.noarch.rpm
+username: admin
+password: admin
+erlang_cookie_path: /var/lib/rabbitmq/.erlang.cookie
+local_cookie_path: /tmp/.erlang.cookie
+# 选择其中一个磁盘节点作为master
+disk_node_host: rabbit@rabbitmq1
+haproxy_url: /data/yum_data/soft/haproxy-1.5.18-9.el7.x86_64.rpm
+haproxy_log_conf: \$ModLoad imudp\n\$UDPServerRun 514\n\$ModLoad imtcp\n\$InputTCPServerRun 514\nlocal2.*    /var/log/haproxy/haproxy.log

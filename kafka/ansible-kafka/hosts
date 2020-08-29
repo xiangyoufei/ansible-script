@@ -1,0 +1,4 @@
+[kafka]
+10.200.60.7 hostname=kafka1 myid=1 broker_id=1  master=true
+10.200.60.29 hostname=kafka2 myid=2 broker_id=2
+10.200.60.34 hostname=kafka3 myid=3 broker_id=3

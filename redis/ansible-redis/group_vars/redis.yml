@@ -1,0 +1,21 @@
+---
+redis_list:
+  - name: redis_master_info
+    port: 7000
+  - name: redis_slave_info
+    port: 7001
+
+redis_bin:
+  - redis-benchmark
+  - redis-check-aof
+  - redis-check-rdb
+  - redis-trib.rb
+  - redis-cli
+  - redis-sentinel
+  - redis-server
+
+
+redis_cluster_ip:
+ - 10.200.60.13
+ - 10.200.60.31
+ - 10.200.60.64

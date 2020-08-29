@@ -1,0 +1,4 @@
+[mysql]
+10.200.60.17  server_id=100 master=true
+10.200.60.37  server_id=200
+10.200.60.12  server_id=300

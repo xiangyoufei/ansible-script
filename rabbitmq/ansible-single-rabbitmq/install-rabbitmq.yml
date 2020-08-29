@@ -1,0 +1,53 @@
+- name: install rabbitmq app
+  gather_facts: False
+  hosts: single-rabbitmq
+  remote_user: root
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: download erlang package
+      copy: src={{ erlang_url }} dest=/tmp/erlang.rpm
+
+    - name: install erlang packages
+      yum: name=/tmp/erlang.rpm state=present
+
+    - name: download socat package
+      copy: src={{ socat_url }} dest=/tmp/socat.rpm
+
+    - name: install socat packages
+      yum: name=/tmp/socat.rpm state=present
+
+    - name: download rabbitmq package
+      copy: src={{ rabbitmq_url }} dest=/tmp/rabbitmq-server.rpm
+
+    - name: rpm install rabbitmq-server
+      yum: name=/tmp/rabbitmq-server.rpm state=present
+
+    - name: start rabbitmq-server
+      service: name=rabbitmq-server enabled=yes state=restarted
+
+    - name: Enable the plugins is installed
+      shell: rabbitmq-plugins enable rabbitmq_management && rabbitmq-plugins enable rabbitmq_mqtt && rabbitmq-plugins enable rabbitmq_web_mqtt
+      notify:
+        restart rabbitmq-server
+
+    - name: create the rabbitmq user
+      shell: rabbitmqctl add_user {{ username }} {{ password }}
+      ignore_errors: yes
+
+    - name: add rabbitmq_user to adminstrator
+      shell: rabbitmqctl set_user_tags {{ username }} administrator
+
+    - name: configure the rabbitmq_user premission
+      shell: rabbitmqctl set_permissions -p "/" {{ username }} ".*" ".*" ".*"
+
+    - name: del rabbitmq install pkg
+      file: path={{ item }} state=absent
+      with_items:
+        - /tmp/erlang.rpm
+        - /tmp/socat.rpm
+        - /tmp/rabbitmq-server.rpm
+
+  handlers: 
+    - name: restart rabbitmq-server 
+      service: name=rabbitmq-server state=restarted

@@ -1,0 +1,10 @@
+port: 6379
+redis_bin_path: /ansible-single-redis/files
+redis_bin:
+  - redis-benchmark
+  - redis-check-aof
+  - redis-check-rdb
+  - redis-trib.rb
+  - redis-cli
+  - redis-sentinel
+  - redis-server

@@ -1,0 +1,8 @@
+[redis]
+10.200.60.13   master=true
+10.200.60.31
+10.200.60.64
+
+[redis:vars]
+mport=7000
+sport=7001

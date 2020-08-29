@@ -1,0 +1,16 @@
+mysql_rpms:
+  - mysql-community-common-8.0.18-1.el7.x86_64.rpm
+  - mysql-community-libs-8.0.18-1.el7.x86_64.rpm
+  - mysql-community-client-8.0.18-1.el7.x86_64.rpm
+  - mysql-community-server-8.0.18-1.el7.x86_64.rpm
+
+expect_rpms:
+  - tcl-8.5.13-8.el7.x86_64.rpm
+  - expect-5.45-14.el7_1.x86_64.rpm
+group_seeds: mysql1:33306,mysql2:33306,mysql3:33306
+root_password: gridsum1234
+file_list:
+   -/usr/mysql/mysql/lib
+   -/usr/mysql/data
+   -/var/log
+AnsibleDir: /home/ansible/mysql_cluster/roles/mysql

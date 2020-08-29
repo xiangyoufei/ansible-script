@@ -1,0 +1,42 @@
+- name: install kafka
+  hosts: single-kafka
+  remote_user: root
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:
+  - name: set_hosts
+    lineinfile: dest=/etc/hosts line= "{{ip}} {{name}}" state=present
+  - name: mkdir necessary catalog
+    file: path=/usr/java state=directory mode=0755
+  - name: copy jdk rpm
+    copy: src={{jdk_path}}  dest=/usr/java/   mode=u+x
+  - name: install jdk
+    yum: name=/usr/java/{{jdk_package_name}} state=present
+  - name: install zookeeper
+    unarchive: src={{zk_path}} dest=/usr/local/
+  - name: install configuration file for zookeeper
+    template: src={{zoo.cfg_path}} dest=/usr/local/{{zk_bin_name}}/conf/zoo.cfg
+  - name: create dataDir
+    file: 
+      path: /usr/local/{{zk_bin_name}}/dataDir
+      state: directory
+  - name: create logdir
+    file:
+      path: /usr/local/{{zk_bin_name}}/dataDir
+      state: directory
+  - name: add myid file
+    shell: echo {{ myid }} > /usr/local/{{zk_bin_name}}/dataDir/myid
+  - name: start zookeeper
+    shell: /usr/local/{{zk_bin_name}}/bin/zkServer.sh start
+    tags:
+    - start_zookeeper
+  - name: copy and unzip kafka
+    unarchive: src={{kafka_path}} dest=/usr/local/
+  - name: install configuration file for kafka
+    template: src={{server.properties_path}} dest=/usr/local/{{kafka_edition}}/config/server.properties
+  - name: start kafka
+    shell: JMX_PORT=9997 /usr/local/{{kafka_edition}}/bin/kafka-server-start.sh -daemon /usr/local/{{kafka_edition}}/config/server.properties &
+    tags:
+    - start
+

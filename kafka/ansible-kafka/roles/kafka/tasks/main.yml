@@ -1,0 +1,9 @@
+- name: copy and unzip kafka
+  unarchive: src=kafka_2.13-2.4.0.tgz dest=/usr/local/
+- name: install configuration file for kafka
+  template: src=server.properties.j2 dest=/usr/local/kafka_2.13-2.4.0/config/server.properties
+- name: start kafka
+  shell: JMX_PORT=9997 /usr/local/kafka_2.13-2.4.0/bin/kafka-server-start.sh -daemon /usr/local/kafka_2.13-2.4.0/config/server.properties &
+  tags:
+  - start
+

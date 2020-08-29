@@ -1,0 +1,7 @@
+- name: mkdir necessary catalog
+  file: path=/usr/java state=directory mode=0755
+- name: copy jdk rpm
+  copy: src={{jdk_package_name}}  dest=/usr/java/   mode=u+x
+- name: install_jdk
+  yum: name=/usr/java/{{jdk_package_name}} state=present
+#  shell: chdir=/usr/java/ rpm -ivh {{jdk_package_name}}

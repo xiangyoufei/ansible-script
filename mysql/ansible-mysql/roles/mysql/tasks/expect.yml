@@ -1,0 +1,27 @@
+---
+- name: copy_expect_rpms
+  copy: src={{ item }}  dest=/home/mysql/   mode=u+x
+  with_items:
+    - "{{ expect_rpms }}"
+
+- name: install_expect
+  yum: name=/home/mysql/{{ item }} state=present
+  with_items:
+    - "{{ expect_rpms }}"
+  tags:
+    - install_expect
+ 
+
+- name: copy_alter_password shell
+  template:
+    src: expect.sh.j2
+    dest: /home/mysql/expect.sh
+    mode: 777
+
+- name: bootstrap_cluster
+  shell: /home/mysql/expect.sh
+  when: master is defined
+
+- name: add_group
+  shell: /home/mysql/expect.sh
+  when: master is not defined

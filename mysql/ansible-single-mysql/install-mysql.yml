@@ -1,0 +1,67 @@
+- name: install mysql
+  hosts: single-mysql
+  remote_user: root
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:
+  - name: create_mysql_rpms_file
+    file:
+      path: /home/mysql
+      state: directory
+      mode: 0755
+  - name: copy_mysql_rpms
+    copy: src={{mysql_path}}/{{item}}  dest=/home/mysql/   mode=u+x
+    with_items:
+      - "{{ mysql_rpm }}"
+  - name: get_mariadb
+    shell:  rpm -qa|grep mariadb
+    ignore_errors: True
+    register: mariadb_rpm
+
+  - name: remove_mariadb
+    shell:  echo "y" | yum remove "{{ mariadb_rpm.stdout }}"
+    when:  mariadb_rpm.stdout !=""
+
+  - name: install mysql rpms
+    yum: name=/home/mysql/{{item}} state=present
+    with_items:
+      - "{{ mysql_rpm }}"
+  - name: copy_my.cnf
+    template:
+      src: my.cnf.j2
+      dest: /etc/my.cnf
+      owner: mysql
+      group: mysql
+
+  - name: mysqld --initialize
+    shell: mysqld --initialize-insecure 
+
+  - name: chown mysql
+    shell: chown mysql:mysql -R /var/lib/mysql
+
+  - name: start mysql
+    shell: systemctl start mysqld
+    ignore_errors: true
+  
+  - name: copy_expect_rpms
+    copy: src={{mysql_path}}/{{ item }}  dest=/home/mysql/   mode=u+x
+    with_items:
+      - "{{ expect_rpms }}"
+
+  - name: install_expect
+    yum: name=/home/mysql/{{ item }} state=present
+    with_items:
+      - "{{ expect_rpms }}"
+    tags:
+      - install_expect
+ 
+
+  - name: copy_alter_password shell
+    template:
+      src: expect.sh.j2
+      dest: /home/mysql/expect.sh
+      mode: 777
+
+  - name: modify password
+    shell: sh /home/mysql/expect.sh

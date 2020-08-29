@@ -1,0 +1,63 @@
+一.  ansible免密操作
+    在ansible主机执行
+    cd /root/.ssh
+    ssh-keygen -t rsa   #一直回车完成
+	在ansible主机上将所要部署所有目标主机进行如下操作
+    ssh-copy-id -i /root/.ssh/id_rsa.pub root@目标主机IP
+	输入登录密码
+	执行下面命令进行验证
+	ssh root@目标主机IP
+	
+二. 修改/etc/ansible/hosts文件
+	例如：
+	追加
+	[rabbitmq]
+	10.200.60.12
+	10.200.60.31
+	10.200.60.19
+	10.200.60.17
+
+	# 随便一台节点
+	[cookie-node]
+	10.200.60.12
+
+	[ram-node]
+	10.200.60.19
+	10.200.60.17
+
+	[disk-node]
+	10.200.60.12
+	10.200.60.31
+
+	# 两个disknode中，在创建集群时候选中一个作为master，配置在vars.yml的disk_node_host参数，另一个配置在这里
+	[disk-node-notmaster]
+	10.200.60.31
+
+	[ha-node]
+	10.200.60.12
+    备注：10.200.60.12为安装rabbitmq的单节点ip
+
+三. 修改/ansible单节点部署/ansible-single-rabbitmq/vars.yml文件
+
+	node_hosts: 4个rabbitmq的hosts。例：10.200.60.12 rabbitmq1\n10.200.60.31 rabbitmq2\n10.200.60.19 rabbitmq3\n10.200.60.17 rabbitmq4
+	erlang_url：erlang-21.3.8.2-1.el7.x86_64.rpm的全路径。例：/data/yum_data/soft/erlang-21.3.8.2-1.el7.x86_64.rpm
+	socat_url：socat-1.7.3.2-2.el7.x86_64.rpm的全路径
+	rabbitmq_url：rabbitmq-server-3.8.1-1.el7.noarch.rpm的全路径
+	username：创建rabbitmq的用户。例：admin
+	password：创建新用户的密码。例：admin
+	disk_node_host：选择一个磁盘节点作为集群主节点 例：rabbit@rabbitmq1
+	haproxy_url：haproxy-1.5.18-9.el7.x86_64.rpm的全路径
+
+四、修改/ansible-rabbitmq/templates/haproxy.cfg.j2
+	最下面的server修改为ram-node：
+		server   node1 10.200.60.12:5672 weight 5 check inter 2000 rise 2 fall 3
+		server   node2 10.200.60.31:5672 weight 5 check inter 2000 rise 2 fall 3
+	备注：有几个添加几个。
+
+五. 执行脚本
+	cd /ansible-rabbitmq
+	ansible-playbook rabbitmq-varfile.yml
+	
+备注：配置集群端口号在haproxy的配置文件中，当前配置的是5671.若要修改请勿使用5672和其他服务占用的端口号
+
+

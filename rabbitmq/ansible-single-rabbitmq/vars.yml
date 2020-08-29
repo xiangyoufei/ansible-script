@@ -1,0 +1,8 @@
+erlang_url: /ansible-single-rabbitmq/rpm/erlang-21.3.8.2-1.el7.x86_64.rpm
+socat_url: /ansible-single-rabbitmq/rpm/socat-1.7.3.2-2.el7.x86_64.rpm
+rabbitmq_url: /ansible-single-rabbitmq/rpm/rabbitmq-server-3.8.1-1.el7.noarch.rpm
+username: admin
+password: admin
+
+
+

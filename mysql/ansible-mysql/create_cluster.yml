@@ -1,0 +1,33 @@
+---
+- name: copy_repl_add_user shell
+  template:
+    src: mysql_user.sh.j2
+    dest: /home/mysql/mysql_user.sh
+    mode: 777
+
+- name: copy_create_cluster_sh
+  template:
+    src: create_cluster.sh.j2
+    dest: /home/mysql/create_cluster.sh
+    mode: 777
+
+- name: copy_alter_password shell
+  template:
+    src: alter_root_pass.sh.j2
+    dest: /home/mysql/alter_root_pass.sh
+    mode: 777
+
+
+- name: add repl user
+  shell: echo "\n"| /home/mysql/mysql_user.sh
+
+- name: alter root  password
+  shell: echo "\n"| /home/mysql/alter_root_pass.sh
+
+- name:  bootstarp group
+  shell: echo "{{ root_password }}"| /home/mysql/create_cluster.sh
+  when:  master is defined 
+
+- name: add group
+  shell: 
+  when:  master is not defined 

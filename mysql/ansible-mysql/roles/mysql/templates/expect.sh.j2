@@ -1,0 +1,41 @@
+#!/bin/bash
+expect << EOF
+spawn mysql  -u root -p
+expect "Enter password:"
+send "\n"
+expect "*>*"
+send "SET SQL_LOG_BIN=0;\r"
+expect "*>*"
+send "use mysql;\r"
+expect "*>*"
+send "update user set host = '%' where user = 'root';\r"
+expect "*>*"
+send "CREATE USER rpl_user@'%' IDENTIFIED WITH 'mysql_native_password' BY 'password';\r"
+expect "*>*"
+send "GRANT REPLICATION SLAVE ON *.* TO rpl_user@'%';\r"
+expect "*>*"
+send "GRANT BACKUP_ADMIN ON *.* TO rpl_user@'%';\r"
+expect "*>*"
+send "FLUSH PRIVILEGES;\r"
+expect "*>*"
+send "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '{{root_password}}';\r"
+expect "*>*"
+send "SET SQL_LOG_BIN=1;\r"
+expect "*>*"
+send "CHANGE MASTER TO MASTER_USER='rpl_user', MASTER_PASSWORD='password'  FOR CHANNEL 'group_replication_recovery';\r"
+expect "*>*"
+send "INSTALL PLUGIN group_replication SONAME 'group_replication.so';\r"
+expect "*>*"
+{% if master is defined  %}
+send "SET GLOBAL group_replication_bootstrap_group=ON;\r"
+expect "*>*"
+send "START GROUP_REPLICATION;\r"
+expect "*>*"
+send "SET GLOBAL group_replication_bootstrap_group=OFF;\r"
+expect "*>*"
+{% else %}
+send "START GROUP_REPLICATION;\r"
+expect "*>*"
+{% endif  %}
+send "quit;\r"
+EOF

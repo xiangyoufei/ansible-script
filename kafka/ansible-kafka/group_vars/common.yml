@@ -1,0 +1,7 @@
+host_list:
+ -ip: 10.200.60.37
+  name: kafka1
+ -ip: 10.200.60.7
+  name: kafka2
+ -ip: 10.200.60.76
+  name: kafka3

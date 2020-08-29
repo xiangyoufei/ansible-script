@@ -1,0 +1,12 @@
+#!/bin/bash
+expect << EOF
+spawn mysql  -u root -p
+expect "Enter password:"
+send "\n"
+expect "*>*"
+send "use mysql;\r"
+expect "*>*"
+send "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{root_password}}';\r"
+expect "*>*"
+send "quit;\r"
+EOF

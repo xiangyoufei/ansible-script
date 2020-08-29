@@ -1,0 +1,6 @@
+---
+#file: zookeeper.yml
+ - hosts: kafka
+   remote_user: root
+   roles:
+     - zookeeper

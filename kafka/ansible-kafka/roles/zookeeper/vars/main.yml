@@ -1,0 +1,8 @@
+server1_hostname: kafka1
+server2_hostname: kafka2
+server3_hostname: kafka3
+
+
+file_dir:
+  - DataDir
+  - DataLogDir

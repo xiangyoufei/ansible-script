@@ -1,0 +1,56 @@
+# The id of the broker. This must be set to a unique integer for each broker.
+broker.id={{broker_id}}
+
+############################# Internal Topic Settings  #############################
+## The replication factor for the group metadata internal topics "__consumer_offsets" and "__transaction_state"
+## For anything other than development testing, a value greater than 1 is recommended for to ensure availability such as 3.
+offsets.topic.replication.factor=1
+transaction.state.log.replication.factor=1
+transaction.state.log.min.isr=1
+
+
+############################# Socket Server Settings #############################
+
+listeners=PLAINTEXT://:9092
+
+# The number of threads handling network requests
+num.network.threads=3
+
+# The number of threads doing disk I/O
+num.io.threads=8
+
+# The send buffer (SO_SNDBUF) used by the socket server
+socket.send.buffer.bytes=102400
+
+# The receive buffer (SO_RCVBUF) used by the socket server
+socket.receive.buffer.bytes=102400
+
+# The maximum size of a request that the socket server will accept (protection against OOM)
+socket.request.max.bytes=104857600
+
+# A comma seperated list of directories under which to store log files
+log.dirs=/usr/local/kafka_2.13-2.4.0/kafkaLogs
+num.partitions=1
+
+# This value is recommended to be increased for installations with data dirs located in RAID array.
+num.recovery.threads.per.data.dir=1
+
+log.retention.hours=168
+
+
+# The maximum size of a log segment file. When this size is reached a new log segment will be created.
+log.segment.bytes=1073741824
+
+# to the retention policies
+log.retention.check.interval.ms=300000
+
+zookeeper.connect={{zk_cluster}}
+
+# Timeout in ms for connecting to zookeeper
+zookeeper.connection.timeout.ms=6000
+
+# 删除topic(需要server.properties中设置delete.topic.enable=true否则只是标记删除)
+delete.topic.enable=true
+
+# 关闭自动创建topic
+auto.create.topics.enable=true

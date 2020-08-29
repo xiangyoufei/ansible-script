@@ -1,0 +1,4 @@
+---
+- include_tasks: hosts.yml
+- include_tasks: install_mysql.yml
+- include_tasks: expect.yml

@@ -1,0 +1,6 @@
+---
+#file: kafka.yml
+- hosts: kafka
+  roles:
+    - common
+

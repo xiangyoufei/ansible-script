@@ -1,0 +1,41 @@
+- name: create_mysql_rpms_file
+  file:
+    path: /home/mysql
+    state: directory
+    mode: 0755
+- name: copy_mysql_rpms
+  copy: src={{ item }}  dest=/home/mysql/   mode=u+x
+  with_items:
+    - "{{ mysql_rpms }}"
+- name: get_mariadb
+  shell:  rpm -qa|grep mariadb
+  ignore_errors: True
+  register: mariadb_rpm
+
+- name: remove_mariadb
+  shell:  echo "y" | yum remove "{{ mariadb_rpm.stdout }}"
+  when:  mariadb_rpm.stdout !=""
+
+- name: install mysql rpms
+  yum: name=/home/mysql/{{ item }} state=present
+  with_items:
+    - "{{ mysql_rpms }}"
+  tags:
+    - install_mysql
+
+- name: copy_my.cnf
+  template:
+    src: my.cnf.j2
+    dest: /etc/my.cnf
+    owner: mysql
+    group: mysql
+
+- name: mysqld --initialize
+  shell: mysqld --initialize-insecure 
+
+- name: chown mysql
+  shell: chown mysql:mysql -R /var/lib/mysql
+
+- name: start mysql
+  shell: systemctl start mysqld
+  ignore_errors: true

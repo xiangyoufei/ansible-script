@@ -1,0 +1,7 @@
+---
+# file: site.y
+- import_playbook: common.yml
+- import_playbook: jdk.yml
+- import_playbook: zookeeper.yml
+- import_playbook: kafka.yml
+#

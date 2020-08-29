@@ -1,0 +1,18 @@
+ip: 10.200.60.13
+name: kafka1
+server1_hostname: kafka1
+file_dir:
+  - DataDir
+  - DataLogDir
+zk_cluster: 10.200.60.13:2181
+jdk_package_name: jdk-8u181-linux-x64.rpm
+jdk_path: /ansible-single部署/rpm/jdk-8u181-linux-x64.rpm
+zk_path: /ansible-single部署/rpm/apache-zookeeper-3.5.6-bin.tar.gz
+zoo.cfg_path: /ansible-single部署/zoo.cfg.j2
+zk_bin_name: apache-zookeeper-3.5.6-bin
+kafka_path: /ansible-single部署/rpm/kafka_2.13-2.4.0.tgz
+server.properties_path: /ansible-single部署/server.properties.j2
+kafka_edition: kafka_2.13-2.4.0
+myid: 1
+broker_id: 1
+

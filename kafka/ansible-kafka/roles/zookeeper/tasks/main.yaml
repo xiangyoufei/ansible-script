@@ -1,0 +1,24 @@
+- name: install zookeeper
+  unarchive: src=apache-zookeeper-3.5.6-bin.tar.gz dest=/usr/local/
+- name: install configuration file for zookeeper
+  template: src=zoo.cfg.j2 dest=/usr/local/apache-zookeeper-3.5.6-bin/conf/zoo.cfg
+- name: create dataDir
+  file: 
+    path: /usr/local/apache-zookeeper-3.5.6-bin/dataDir
+    state: directory
+  #  with_items:
+  #    -"{{ file_dir}}"
+- name: create logdir
+  file:
+    path: /usr/local/apache-zookeeper-3.5.6-bin/dataDir
+    state: directory
+- name: add myid file
+  shell: echo {{ myid }} > /usr/local/apache-zookeeper-3.5.6-bin/dataDir/myid
+#- name: copy script to clear zookeeper logs.
+#  copy: src=clean_zklog.sh dest=/usr/local/apache-zookeeper-3.5.6/clean_zklog.sh mode=755
+#- name: crontab task
+#  cron: name="clear zk logs" weekday="0" hour="0" minute="0" job="/usr/local/apache-zookeeper-3.5.6/clean_zklog.sh"
+- name: start zookeeper
+  shell: /usr/local/apache-zookeeper-3.5.6-bin/bin/zkServer.sh start
+  tags:
+  - start_zookeeper

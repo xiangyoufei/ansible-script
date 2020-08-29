@@ -2,7 +2,6 @@
 
 由于文件大小限制，脚本中去除了jdk、kafka、zk等安装包。
 
-![image-20200829084730499](C:\Users\T470\AppData\Roaming\Typora\typora-user-images\image-20200829084730499.png)
 
 ## 集群安装方式：（files目录需要手动创建）
 
